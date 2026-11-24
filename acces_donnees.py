@@ -3,9 +3,9 @@ from connexion import get_connexion
 from modeles import Societe, Bilan, Cours
 
 # ===== Toutes les requetes SQL (avec parametres %s) =====
-SQL_LISTER_SOCIETES = "SELECT id, nom, secteur FROM societe ORDER BY nom"
-SQL_LISTER_SOCIETES_SECTEUR = "SELECT id, nom, secteur FROM societe WHERE secteur = %s ORDER BY nom"
-SQL_LIRE_SOCIETE = "SELECT id, nom, secteur FROM societe WHERE id = %s"
+SQL_LISTER_SOCIETES = "SELECT id, nom, secteur, devise FROM societe ORDER BY nom"
+SQL_LISTER_SOCIETES_SECTEUR = "SELECT id, nom, secteur, devise FROM societe WHERE secteur = %s ORDER BY nom"
+SQL_LIRE_SOCIETE = "SELECT id, nom, secteur, devise FROM societe WHERE id = %s"
 SQL_AJOUTER_SOCIETE = "INSERT INTO societe (nom, secteur) VALUES (%s, %s)"
 SQL_LISTER_BILANS = (
     "SELECT id, societe_id, annee, chiffre_affaires, resultat_net, actifs_courants, "

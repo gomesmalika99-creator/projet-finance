@@ -1,0 +1,2 @@
+USE finance;
+ALTER TABLE societe ADD COLUMN devise CHAR(3) NOT NULL DEFAULT 'EUR';
