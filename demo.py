@@ -8,7 +8,7 @@ FENETRE = 3
 
 def afficher(nom, valeur, pourcentage=False):
     if valeur is None:
-        print(f"  {nom:<12}: calcul impossible (division par zero)")
+        print(f"  {nom:<12}: calcul impossible")
     elif pourcentage:
         print(f"  {nom:<12}: {valeur:.2f} %")
     else:
@@ -27,9 +27,8 @@ def main():
     bilans = lister_bilans(societe.id)
     if bilans:
         b = bilans[-1]
-        print(f"\nIndicateurs de l'annee {b.annee} :")
-        marge = marge_nette(b.resultat_net, b.chiffre_affaires)
-        afficher("Marge nette", None if marge is None else marge * 100, pourcentage=True)
+        print(f"\nIndicateurs de la derniere annee ({b.annee}) :")
+        afficher("Marge nette", marge_nette(b.resultat_net, b.chiffre_affaires), pourcentage=True)
         afficher("Liquidite", liquidite(b.actifs_courants, b.passifs_courants))
         afficher("Endettement", endettement(b.dettes_totales, b.capitaux_propres))
 
@@ -41,11 +40,14 @@ def main():
     print(f"\nMoyenne mobile sur {FENETRE} jours :")
     moyennes = moyenne_mobile(clotures, FENETRE)
     if moyennes is None:
-        print("  calcul impossible (pas assez de cours)")
+        print("  calcul impossible")
     else:
-        for c, m in zip(cours[FENETRE - 1:], moyennes):
+        for c, m in zip(cours, moyennes):
             print(f"  {c.date_cours} : {m:.2f}")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as erreur:
+        print(f"Erreur : {erreur}")
