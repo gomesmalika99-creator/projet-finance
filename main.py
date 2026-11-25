@@ -1,10 +1,15 @@
+import logging
 from datetime import date
 
-from fastapi import FastAPI, HTTPException
+import pymysql
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 import depot
 from schemas import SocieteEntree
+
+logger = logging.getLogger("api")
 
 app = FastAPI(title="API Client financier")
 
@@ -58,6 +63,8 @@ def get_cours(id_societe: int,
 def post_societe(societe: SocieteEntree):
     nouvelle = depot.ajouter_societe(societe.nom, societe.secteur)
     return vars(nouvelle)
+
+
 @app.put("/societes/{id_societe}")
 def put_societe(id_societe: int, societe: SocieteEntree):
     if depot.lire_societe(id_societe) is None:
@@ -74,3 +81,19 @@ def delete_societe(id_societe: int):
         raise HTTPException(status_code=409,
                             detail="Suppression impossible : la société a encore des bilans")
     depot.supprimer_societe(id_societe)
+
+
+# ===== Gestion des erreurs =====
+@app.exception_handler(pymysql.err.IntegrityError)
+def erreur_integrite(request: Request, exc: Exception):
+    # La base refuse la demande (contrainte) : 409, sans détail technique
+    return JSONResponse(status_code=409,
+                        content={"detail": "La demande contredit l'état de la base"})
+
+
+@app.exception_handler(Exception)
+def erreur_imprevue(request: Request, exc: Exception):
+    # Le détail reste dans le terminal, jamais dans la réponse
+    logger.exception("Erreur imprévue")
+    return JSONResponse(status_code=500,
+                        content={"detail": "Erreur interne du serveur"})
