@@ -64,3 +64,41 @@ def lister_cours(id_societe, date_debut, date_fin):
         with conn.cursor() as cur:
             cur.execute(SQL_LISTER_COURS, (id_societe, date_debut, date_fin))
             return [Cours(**ligne) for ligne in cur.fetchall()]
+
+        # ===== Ajouts pour l'API (étape 5) =====
+SQL_REMPLACER_SOCIETE = "UPDATE societe SET nom = %s, secteur = %s WHERE id = %s"
+SQL_SUPPRIMER_SOCIETE = "DELETE FROM societe WHERE id = %s"
+SQL_COMPTER_BILANS = "SELECT COUNT(*) AS nb FROM bilan WHERE societe_id = %s"
+
+
+def remplacer_societe(id_societe, nom, secteur):
+    conn = get_connexion()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(SQL_REMPLACER_SOCIETE, (nom, secteur, id_societe))
+        conn.commit()
+    except pymysql.MySQLError:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def supprimer_societe(id_societe):
+    conn = get_connexion()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(SQL_SUPPRIMER_SOCIETE, (id_societe,))
+        conn.commit()
+    except pymysql.MySQLError:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def compter_bilans(id_societe):
+    with get_connexion() as conn:
+        with conn.cursor() as cur:
+            cur.execute(SQL_COMPTER_BILANS, (id_societe,))
+            return cur.fetchone()["nb"]

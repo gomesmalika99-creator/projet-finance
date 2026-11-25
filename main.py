@@ -58,3 +58,19 @@ def get_cours(id_societe: int,
 def post_societe(societe: SocieteEntree):
     nouvelle = depot.ajouter_societe(societe.nom, societe.secteur)
     return vars(nouvelle)
+@app.put("/societes/{id_societe}")
+def put_societe(id_societe: int, societe: SocieteEntree):
+    if depot.lire_societe(id_societe) is None:
+        raise HTTPException(status_code=404, detail="Société introuvable")
+    depot.remplacer_societe(id_societe, societe.nom, societe.secteur)
+    return vars(depot.lire_societe(id_societe))
+
+
+@app.delete("/societes/{id_societe}", status_code=204)
+def delete_societe(id_societe: int):
+    if depot.lire_societe(id_societe) is None:
+        raise HTTPException(status_code=404, detail="Société introuvable")
+    if depot.compter_bilans(id_societe) > 0:
+        raise HTTPException(status_code=409,
+                            detail="Suppression impossible : la société a encore des bilans")
+    depot.supprimer_societe(id_societe)
