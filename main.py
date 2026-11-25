@@ -4,6 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 import depot
+from schemas import SocieteEntree
 
 app = FastAPI(title="API Client financier")
 
@@ -51,3 +52,9 @@ def get_cours(id_societe: int,
         raise HTTPException(status_code=404, detail="Société introuvable")
     cours = depot.lister_cours(id_societe, date_debut, date_fin)
     return [vars(c) for c in cours]
+
+
+@app.post("/societes", status_code=201)
+def post_societe(societe: SocieteEntree):
+    nouvelle = depot.ajouter_societe(societe.nom, societe.secteur)
+    return vars(nouvelle)
