@@ -21,3 +21,13 @@
 - Tester l'injection SQL : `python test_injection.py`
 
 Le journal des erreurs et le résultat du test d'injection sont dans `JOURNAL.md`.
+
+## Lancer l'API
+
+```
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+- Documentation : http://127.0.0.1:8000/docs
+- Tests : importer `postman/collection.json` dans Postman, puis faire **Run collection**.
