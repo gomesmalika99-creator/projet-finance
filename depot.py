@@ -1,5 +1,5 @@
 import pymysql
-from connexion import get_connexion
+from db import get_connexion
 from modeles import Societe, Bilan, Cours
 
 # ===== Toutes les requetes SQL (avec parametres %s) =====

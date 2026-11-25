@@ -1,4 +1,4 @@
-from acces_donnees import lister_societes, lire_societe
+from depot import lister_societes, lire_societe
 
 piege = "' OR '1'='1"
 

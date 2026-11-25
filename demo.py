@@ -1,5 +1,5 @@
 from datetime import date
-from acces_donnees import lire_societe, lister_bilans, lister_cours
+from depot import lire_societe, lister_bilans, lister_cours
 from indicateurs import marge_nette, liquidite, endettement, rendement, moyenne_mobile
 
 ID_SOCIETE = 1

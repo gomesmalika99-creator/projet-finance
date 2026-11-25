@@ -1,8 +1,8 @@
 from pathlib import Path
 import pymysql
-from connexion import get_connexion
+from db import get_connexion
 
-FICHIER_SQL = Path(__file__).parent / "sql" / "jeu_de_test.sql"
+FICHIER_SQL = Path(__file__).parent / "sql" / "001_jeu_de_test.sql"
 
 
 def charger():
