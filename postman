@@ -1,0 +1,631 @@
+{
+  "info": {
+    "name": "API Client financier",
+    "description": "Une demande par route + tests d'erreur 404, 409 et 422.\nLancer dans l'ordre (Run collection).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "idCree",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1 - Routes (cas qui marchent)",
+      "item": [
+        {
+          "name": "Lister les sociétés",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes"
+              ]
+            },
+            "description": "Renvoie toutes les sociétés."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"La réponse est une liste\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lire une société",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "1"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lister les bilans d'une société",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes/1/bilans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "1",
+                "bilans"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Lister les cours d'une société",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes/1/cours",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "1",
+                "cours"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Créer une société",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/societes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Societe Postman\",\n  \"secteur\": \"Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"L'id de la société créée est enregistré\", function () {",
+                  "    const id = pm.response.json().id;",
+                  "    pm.expect(id).to.be.a(\"number\");",
+                  "    pm.collectionVariables.set(\"idCree\", id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remplacer une société",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/societes/{{idCree}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "{{idCree}}"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Societe Postman modifiee\",\n  \"secteur\": \"Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Supprimer une société",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes/{{idCree}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "{{idCree}}"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 - Cas d'erreur",
+      "item": [
+        {
+          "name": "404 - Lire une société inexistante",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "9999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 - Remplacer une société inexistante",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/societes/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "9999"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"X\",\n  \"secteur\": \"Y\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 - Supprimer une société inexistante",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "9999"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "409 - Supprimer une société qui a des bilans",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "1"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 - Créer avec un nom vide",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/societes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"\",\n  \"secteur\": \"Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 - Créer sans secteur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/societes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Societe incomplete\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 - Créer avec un nom trop long",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/societes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"secteur\": \"Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 - Identifiant qui n'est pas un nombre",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/societes/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes",
+                "abc"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
