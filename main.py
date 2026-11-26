@@ -31,7 +31,7 @@ app.mount("/app", StaticFiles(directory="frontend", html=True), name="front")
 
 # Codes d'erreur affichés dans /docs
 R_404 = {404: {"description": "Société introuvable"}}
-R_409 = {409: {"description": "La demande contredit l'état de la base"}}
+R_409 = {409: {"description": "Symbole déjà utilisé, ou société encore liée à des bilans"}}
 R_422 = {422: {"description": "Données invalides (type, longueur ou champ manquant)"}}
 
 
@@ -58,21 +58,26 @@ def get_societe(id_societe: int):
 
 
 @app.post("/societes", status_code=201, tags=["Sociétés"], summary="Créer une société",
-          description="Crée une société. Le nom (1 à 100 caractères) et le secteur "
-                      "(1 à 50 caractères) sont obligatoires.",
+          description="Crée une société. Le nom (1 à 100 caractères), le secteur "
+                      "(1 à 50 caractères) et le symbole (1 à 10 lettres majuscules "
+                      "ou chiffres, unique) sont obligatoires.",
           responses={**R_409, **R_422})
 def post_societe(societe: SocieteEntree):
-    nouvelle = depot.ajouter_societe(societe.nom, societe.secteur)
+    if depot.symbole_existe(societe.symbole):
+        raise HTTPException(status_code=409, detail="Symbole déjà utilisé")
+    nouvelle = depot.ajouter_societe(societe.nom, societe.secteur, societe.symbole)
     return vars(nouvelle)
 
 
 @app.put("/societes/{id_societe}", tags=["Sociétés"], summary="Remplacer une société",
-         description="Remplace le nom et le secteur d'une société existante.",
+         description="Remplace le nom, le secteur et le symbole d'une société existante.",
          responses={**R_404, **R_409, **R_422})
 def put_societe(id_societe: int, societe: SocieteEntree):
     if depot.lire_societe(id_societe) is None:
         raise HTTPException(status_code=404, detail="Société introuvable")
-    depot.remplacer_societe(id_societe, societe.nom, societe.secteur)
+    if depot.symbole_existe(societe.symbole, sauf_id=id_societe):
+        raise HTTPException(status_code=409, detail="Symbole déjà utilisé")
+    depot.remplacer_societe(id_societe, societe.nom, societe.secteur, societe.symbole)
     return vars(depot.lire_societe(id_societe))
 
 

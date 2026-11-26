@@ -53,3 +53,7 @@ comme une simple valeur texte, jamais comme du code SQL. L'attaque ne peut donc 
 
 ### Point d'attention : la connexion à la base
 Chaque fonction de `depot.py` ouvre sa connexion et la ferme toujours (`with` ou `finally`), même en cas d'erreur. Une demande qui appelle plusieurs fonctions ouvre et ferme donc plusieurs connexions de suite, mais aucune ne reste ouverte.
+
+### 8. Le symbole manquait dans la table `societe`
+- **Problème :** le brief demande un 409 « symbole déjà utilisé », mais la table `societe` n'avait pas de colonne `symbole`.
+- **Solution :** migration `sql/003_ajout_symbole.sql` (colonne `symbole` obligatoire et unique), ajout du symbole dans `modeles.py`, `depot.py`, `schemas.py` (1 à 10 majuscules ou chiffres) et `main.py`. Avant de créer ou de modifier, l'API vérifie le symbole avec `symbole_existe()` et répond 409 s'il est déjà pris.

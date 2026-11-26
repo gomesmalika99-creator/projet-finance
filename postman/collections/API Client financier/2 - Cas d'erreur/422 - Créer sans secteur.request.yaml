@@ -7,7 +7,8 @@ body:
   type: json
   content: |-
     {
-      "nom": "Societe incomplete"
+      "nom": "Societe incomplete",
+      "symbole": "INC"
     }
 scripts:
   - type: afterResponse
@@ -22,4 +23,4 @@ scripts:
           pm.expect(texte).to.not.include("app_finance");
       });
     language: text/javascript
-order: 6000
+order: 7000

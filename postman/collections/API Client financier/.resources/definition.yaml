@@ -1,6 +1,6 @@
 $kind: collection
 description: |-
-  Une demande par route + tests d'erreur 404, 409 et 422.
+  Une demande par route + tests d'erreur 404, 409 (bilans, symbole) et 422.
   Lancer dans l'ordre (Run collection).
 variables:
   baseUrl: http://127.0.0.1:8000

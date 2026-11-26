@@ -1,0 +1,30 @@
+$kind: http-request
+url: "{{baseUrl}}/societes"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nom": "Copie Aurora",
+      "secteur": "Technologie",
+      "symbole": "AUR"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Code 409", function () {
+          pm.response.to.have.status(409);
+      });
+      pm.test("Aucun détail technique dans la réponse", function () {
+          const texte = pm.response.text().toLowerCase();
+          pm.expect(texte).to.not.include("traceback");
+          pm.expect(texte).to.not.include("pymysql");
+          pm.expect(texte).to.not.include("app_finance");
+      });
+      pm.test("Message : symbole déjà utilisé", function () {
+          pm.expect(pm.response.json().detail).to.include("Symbole");
+      });
+    language: text/javascript
+order: 5000

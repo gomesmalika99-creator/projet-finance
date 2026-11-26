@@ -7,3 +7,5 @@ class SocieteEntree(BaseModel):
 
     nom: str = Field(min_length=1, max_length=100)
     secteur: str = Field(min_length=1, max_length=50)
+    # Symbole boursier : 1 à 10 caractères, lettres majuscules et chiffres (ex. AUR)
+    symbole: str = Field(min_length=1, max_length=10, pattern=r"^[A-Z0-9]+$")

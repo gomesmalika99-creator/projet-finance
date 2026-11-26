@@ -8,7 +8,8 @@ body:
   content: |-
     {
       "nom": "Societe Postman",
-      "secteur": "Test"
+      "secteur": "Test",
+      "symbole": "PMAN"
     }
 scripts:
   - type: afterResponse

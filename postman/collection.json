@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "API Client financier",
-    "description": "Une demande par route + tests d'erreur 404, 409 et 422.\nLancer dans l'ordre (Run collection).",
+    "description": "Une demande par route + tests d'erreur 404, 409 (bilans, symbole) et 422.\nLancer dans l'ordre (Run collection).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -168,7 +168,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nom\": \"Societe Postman\",\n  \"secteur\": \"Test\"\n}",
+              "raw": "{\n  \"nom\": \"Societe Postman\",\n  \"secteur\": \"Test\",\n  \"symbole\": \"PMAN\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -218,7 +218,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nom\": \"Societe Postman modifiee\",\n  \"secteur\": \"Test\"\n}",
+              "raw": "{\n  \"nom\": \"Societe Postman modifiee\",\n  \"secteur\": \"Test\",\n  \"symbole\": \"PMAN2\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -336,7 +336,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nom\": \"X\",\n  \"secteur\": \"Y\"\n}",
+              "raw": "{\n  \"nom\": \"X\",\n  \"secteur\": \"Y\",\n  \"symbole\": \"XYZ\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -439,6 +439,59 @@
           ]
         },
         {
+          "name": "409 - Créer avec un symbole déjà utilisé",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/societes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Copie Aurora\",\n  \"secteur\": \"Technologie\",\n  \"symbole\": \"AUR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});",
+                  "pm.test(\"Message : symbole déjà utilisé\", function () {",
+                  "    pm.expect(pm.response.json().detail).to.include(\"Symbole\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "422 - Créer avec un nom vide",
           "request": {
             "method": "POST",
@@ -460,7 +513,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nom\": \"\",\n  \"secteur\": \"Test\"\n}",
+              "raw": "{\n  \"nom\": \"\",\n  \"secteur\": \"Test\",\n  \"symbole\": \"VIDE\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -510,7 +563,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nom\": \"Societe incomplete\"\n}",
+              "raw": "{\n  \"nom\": \"Societe incomplete\",\n  \"symbole\": \"INC\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -560,7 +613,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nom\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"secteur\": \"Test\"\n}",
+              "raw": "{\n  \"nom\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"secteur\": \"Test\",\n  \"symbole\": \"LONG\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -604,6 +657,56 @@
               ]
             },
             "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Code 422\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "});",
+                  "pm.test(\"Aucun détail technique dans la réponse\", function () {",
+                  "    const texte = pm.response.text().toLowerCase();",
+                  "    pm.expect(texte).to.not.include(\"traceback\");",
+                  "    pm.expect(texte).to.not.include(\"pymysql\");",
+                  "    pm.expect(texte).to.not.include(\"app_finance\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "422 - Créer avec un symbole en minuscules",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/societes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "societes"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"Minuscules\",\n  \"secteur\": \"Test\",\n  \"symbole\": \"abc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
           "event": [
             {

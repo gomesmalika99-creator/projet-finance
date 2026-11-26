@@ -9,6 +9,7 @@ class Societe:
     nom: str
     secteur: str
     devise: str = "EUR"
+    symbole: str = ""
 
 
 @dataclass

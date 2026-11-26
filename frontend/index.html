@@ -222,6 +222,7 @@
             <div>
               <h1 id="dNom"></h1>
               <div style="margin-top:6px;display:flex;gap:6px">
+                <span class="badge grey" id="dSymbole" style="font-family:ui-monospace,Consolas,monospace"></span>
                 <span class="badge" id="dSecteur"></span>
                 <span class="badge grey" id="dDevise"></span>
                 <span class="badge grey" id="dId"></span>
@@ -308,6 +309,8 @@
 const CHAMPS_SOCIETE = [
   { name: "nom",     label: "Nom de la société", required: true, max: 100, placeholder: "Ex. Aurora Tech" },
   { name: "secteur", label: "Secteur d'activité", required: true, max: 50,  placeholder: "Ex. Technologie" },
+  { name: "symbole", label: "Symbole boursier", required: true, max: 10, placeholder: "Ex. AUR", majuscules: true,
+    aide: "Lettres majuscules et chiffres, unique" },
 ];
 // Servi par FastAPI (http://127.0.0.1:8000/app) → même adresse que l'API.
 // Ouvert en double-cliquant sur le fichier → adresse locale par défaut.
@@ -369,10 +372,10 @@ function statut(type, texte) { $("apiDot").className = "dot " + type; $("apiStat
    ========================================================== */
 const demo = (() => {
   const societes = [
-    { id: 1, nom: "Aurora Tech", secteur: "Technologie", devise: "EUR" },
-    { id: 2, nom: "Boreal Energie", secteur: "Energie", devise: "EUR" },
-    { id: 3, nom: "Cobalt Sante", secteur: "Sante", devise: "EUR" },
-    { id: 4, nom: "Delta Distribution", secteur: "Distribution", devise: "EUR" },
+    { id: 1, nom: "Aurora Tech", secteur: "Technologie", devise: "EUR", symbole: "AUR" },
+    { id: 2, nom: "Boreal Energie", secteur: "Energie", devise: "EUR", symbole: "BOR" },
+    { id: 3, nom: "Cobalt Sante", secteur: "Sante", devise: "EUR", symbole: "COB" },
+    { id: 4, nom: "Delta Distribution", secteur: "Distribution", devise: "EUR", symbole: "DEL" },
   ];
   const bilans = {}, cours = {};
   let idB = 1, idC = 1;
@@ -410,6 +413,7 @@ function appelDemo(methode, chemin, corps) {
       if (v === undefined || v === null) err.push({ loc: ["body", ch.name], msg: "Field required" });
       else if (String(v).length < 1) err.push({ loc: ["body", ch.name], msg: "String should have at least 1 character" });
       else if (String(v).length > ch.max) err.push({ loc: ["body", ch.name], msg: `String should have at most ${ch.max} characters` });
+      else if (ch.majuscules && !/^[A-Z0-9]+$/.test(v)) err.push({ loc: ["body", ch.name], msg: "String should match pattern '^[A-Z0-9]+$'" });
     }
     return err.length ? { detail: err } : null;
   };
@@ -417,7 +421,8 @@ function appelDemo(methode, chemin, corps) {
   if (id === null && methode === "GET") return rep(200, demo.societes);
   if (id === null && methode === "POST") {
     const e = valider(corps); if (e) return rep(422, e);
-    const s = { id: demo.prochainId++, nom: corps.nom.trim(), secteur: corps.secteur.trim(), devise: "EUR" };
+    if (demo.societes.some(x => x.symbole === corps.symbole)) return rep(409, { detail: "Symbole déjà utilisé" });
+    const s = { id: demo.prochainId++, nom: corps.nom.trim(), secteur: corps.secteur.trim(), devise: "EUR", symbole: corps.symbole };
     demo.societes.push(s); demo.bilans[s.id] = []; demo.cours[s.id] = [];
     return rep(201, s);
   }
@@ -430,7 +435,8 @@ function appelDemo(methode, chemin, corps) {
   if (methode === "GET") return rep(200, demo.societes[idx]);
   if (methode === "PUT") {
     const e = valider(corps); if (e) return rep(422, e);
-    Object.assign(demo.societes[idx], { nom: corps.nom.trim(), secteur: corps.secteur.trim() });
+    if (demo.societes.some(x => x.symbole === corps.symbole && x.id !== id)) return rep(409, { detail: "Symbole déjà utilisé" });
+    Object.assign(demo.societes[idx], { nom: corps.nom.trim(), secteur: corps.secteur.trim(), symbole: corps.symbole });
     return rep(200, demo.societes[idx]);
   }
   if (methode === "DELETE") {
@@ -485,12 +491,12 @@ async function chargerSocietes() {
 
 function afficherSide() {
   const q = $("search").value.trim().toLowerCase();
-  const liste = etat.societes.filter(s => !q || `${s.nom} ${s.secteur}`.toLowerCase().includes(q));
+  const liste = etat.societes.filter(s => !q || `${s.nom} ${s.secteur} ${s.symbole ?? ""}`.toLowerCase().includes(q));
   $("countSide").textContent = etat.societes.length;
   $("listSide").innerHTML = liste.length ? liste.map(s => `
     <li data-id="${esc(s.id)}" class="${etat.courante && etat.courante.id == s.id ? "active" : ""}">
       <span class="avatar" style="background:${couleur(s.nom)}">${esc(initiales(s.nom))}</span>
-      <span style="min-width:0"><div class="name">${esc(s.nom)}</div><div class="sect">${esc(s.secteur)}</div></span>
+      <span style="min-width:0"><div class="name">${esc(s.nom)}</div><div class="sect">${s.symbole ? esc(s.symbole) + " · " : ""}${esc(s.secteur)}</div></span>
     </li>`).join("") : `<li style="cursor:default;color:var(--side-muted)">Aucun résultat</li>`;
   $("listSide").querySelectorAll("li[data-id]").forEach(li => li.onclick = () => ouvrirSociete(li.dataset.id));
 }
@@ -513,10 +519,11 @@ function afficherOverview() {
     return;
   }
   $("tableSocietes").innerHTML = `<table>
-    <thead><tr><th>Société</th><th>Secteur</th><th>Devise</th><th class="num">ID</th></tr></thead>
+    <thead><tr><th>Société</th><th>Symbole</th><th>Secteur</th><th>Devise</th><th class="num">ID</th></tr></thead>
     <tbody>${s.map(x => `<tr class="click" data-id="${esc(x.id)}">
       <td><div style="display:flex;align-items:center;gap:10px">
         <span class="avatar" style="background:${couleur(x.nom)}">${esc(initiales(x.nom))}</span><b>${esc(x.nom)}</b></div></td>
+      <td><code style="font-weight:600">${esc(x.symbole ?? "—")}</code></td>
       <td><span class="badge">${esc(x.secteur)}</span></td>
       <td>${esc(x.devise ?? "—")}</td>
       <td class="num" style="color:var(--muted)">#${esc(x.id)}</td></tr>`).join("")}
@@ -549,6 +556,7 @@ async function ouvrirSociete(id) {
   $("dAvatar").style.background = couleur(data.nom);
   $("dNom").textContent = data.nom;
   $("dSecteur").textContent = data.secteur;
+  $("dSymbole").textContent = data.symbole ?? "—";
   $("dDevise").textContent = data.devise ?? "EUR";
   $("dId").textContent = "ID #" + data.id;
   afficherSide();
@@ -695,11 +703,16 @@ function ouvrirFormulaire(edition) {
       <label for="f_${c.name}">${esc(c.label)}${c.required ? ' <span style="color:var(--down)">*</span>' : ""}</label>
       <input id="f_${c.name}" maxlength="${c.max}" placeholder="${esc(c.placeholder || "")}"
         value="${edition ? esc(etat.courante[c.name]) : ""}" autocomplete="off">
-      <div class="hint"><span class="msg"></span><span class="cnt"></span></div>
+      <div class="hint"><span class="msg">${esc(c.aide || "")}</span><span class="cnt"></span></div>
     </div>`).join("");
   CHAMPS_SOCIETE.forEach(c => {
     const inp = $("f_" + c.name), cnt = $("w_" + c.name).querySelector(".cnt");
-    const maj = () => { cnt.textContent = `${inp.value.length}/${c.max}`; $("w_" + c.name).classList.remove("error"); $("w_" + c.name).querySelector(".msg").textContent = ""; };
+    const maj = () => {
+      if (c.majuscules) inp.value = inp.value.toUpperCase();
+      cnt.textContent = `${inp.value.length}/${c.max}`;
+      $("w_" + c.name).classList.remove("error");
+      $("w_" + c.name).querySelector(".msg").textContent = c.aide || "";
+    };
     inp.oninput = maj; maj();
   });
   ouvrir("mForm");
@@ -725,6 +738,10 @@ $("formSociete").onsubmit = async (e) => {
     await chargerSocietes();
     if (r.data && r.data.id !== undefined) ouvrirSociete(r.data.id);
   } catch (err) {
+    if (err.status === 409 && /symbole/i.test(err.data?.detail || "") && $("w_symbole")) {
+      $("w_symbole").classList.add("error");
+      $("w_symbole").querySelector(".msg").textContent = err.data.detail;
+    }
     if (err.status === 422 && Array.isArray(err.data?.detail)) {
       err.data.detail.forEach(d => {
         const champ = (d.loc || [])[1], w = champ && $("w_" + champ);

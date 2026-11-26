@@ -8,7 +8,8 @@ body:
   content: |-
     {
       "nom": "X",
-      "secteur": "Y"
+      "secteur": "Y",
+      "symbole": "XYZ"
     }
 scripts:
   - type: afterResponse

@@ -8,7 +8,8 @@ body:
   content: |-
     {
       "nom": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-      "secteur": "Test"
+      "secteur": "Test",
+      "symbole": "LONG"
     }
 scripts:
   - type: afterResponse
@@ -23,4 +24,4 @@ scripts:
           pm.expect(texte).to.not.include("app_finance");
       });
     language: text/javascript
-order: 7000
+order: 8000

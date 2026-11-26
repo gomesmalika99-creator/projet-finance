@@ -8,7 +8,8 @@ body:
   content: |-
     {
       "nom": "",
-      "secteur": "Test"
+      "secteur": "Test",
+      "symbole": "VIDE"
     }
 scripts:
   - type: afterResponse
@@ -23,4 +24,4 @@ scripts:
           pm.expect(texte).to.not.include("app_finance");
       });
     language: text/javascript
-order: 5000
+order: 6000

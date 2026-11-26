@@ -2,11 +2,11 @@ DELETE FROM cours;
 DELETE FROM bilan;
 DELETE FROM societe;
 
-INSERT INTO societe (id, nom, secteur) VALUES
-(1, 'Aurora Tech', 'Technologie'),
-(2, 'Boreal Energie', 'Energie'),
-(3, 'Cobalt Sante', 'Sante'),
-(4, 'Delta Distribution', 'Distribution');
+INSERT INTO societe (id, nom, secteur, symbole) VALUES
+(1, 'Aurora Tech', 'Technologie', 'AUR'),
+(2, 'Boreal Energie', 'Energie', 'BOR'),
+(3, 'Cobalt Sante', 'Sante', 'COB'),
+(4, 'Delta Distribution', 'Distribution', 'DEL');
 
 INSERT INTO bilan (societe_id, annee, chiffre_affaires, resultat_net, actifs_courants, passifs_courants, dettes_totales, capitaux_propres) VALUES
 (1, 2022, 1000000, 80000, 400000, 200000, 300000, 500000),
