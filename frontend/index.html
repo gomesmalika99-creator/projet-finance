@@ -244,14 +244,20 @@
         <div class="card">
           <div class="card-head">
             <div><h2>Cours de clôture</h2><small id="coursInfo"></small></div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <label style="font-size:13px;color:var(--muted)">Du <input type="date" id="dDebut" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px"></label>
+            <label style="font-size:13px;color:var(--muted)">au <input type="date" id="dFin" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px"></label>
+            <button class="btn" id="btnDates" style="padding:5px 12px">Filtrer</button>
             <div class="seg" id="periods">
               <button data-days="30">1M</button>
               <button data-days="180">6M</button>
               <button data-days="365">1A</button>
               <button data-days="0" class="active">Tout</button>
             </div>
+            </div>
           </div>
           <div class="card-body"><div class="chart" id="chart"></div></div>
+          <div class="table-scroll" id="tableCours" style="max-height:320px;overflow:auto;border-top:1px solid var(--line)"></div>
         </div>
 
         <div class="card">
@@ -560,6 +566,7 @@ async function ouvrirSociete(id) {
   $("dDevise").textContent = data.devise ?? "EUR";
   $("dId").textContent = "ID #" + data.id;
   afficherSide();
+  etat.debut = etat.fin = null; $("dDebut").value = $("dFin").value = "";
   chargerBilans();
   chargerCours();
 }
@@ -613,14 +620,21 @@ async function chargerBilans() {
 async function chargerCours() {
   const s = etat.courante;
   let chemin = `/societes/${s.id}/cours`;
-  if (etat.jours > 0) {
+  const params = new URLSearchParams();
+  if (etat.debut || etat.fin) {
+    if (etat.debut) params.set("date_debut", etat.debut);
+    if (etat.fin) params.set("date_fin", etat.fin);
+  } else if (etat.jours > 0) {
     const d = new Date(); d.setDate(d.getDate() - etat.jours);
-    chemin += `?date_debut=${isoJour(d)}&date_fin=${isoJour(new Date())}`;
+    params.set("date_debut", isoJour(d)); params.set("date_fin", isoJour(new Date()));
   }
+  if ([...params].length) chemin += "?" + params.toString();
   $("chart").innerHTML = `<div class="skeleton" style="height:100%"></div>`;
   let cours = [];
   try { ({ data: cours } = await appel("GET", chemin)); } catch {}
-  dessiner((cours || []).slice().sort((a, b) => a.date_cours.localeCompare(b.date_cours)), s.devise || "EUR");
+  const tries = (cours || []).slice().sort((a, b) => a.date_cours.localeCompare(b.date_cours));
+  dessiner(tries, s.devise || "EUR");
+  tableauCours(tries, s.devise || "EUR");
 }
 
 function dessiner(pts, dev) {
@@ -675,10 +689,28 @@ function dessiner(pts, dev) {
   $("hz").onmouseleave = () => { tip.style.display = "none"; ["hx","hc"].forEach(id => svg.getElementById(id).setAttribute("visibility", "hidden")); };
 }
 
+function tableauCours(pts, dev) {
+  if (!pts.length) { $("tableCours").innerHTML = ""; return; }
+  $("tableCours").innerHTML = `<table>
+    <thead><tr><th>Date</th><th class="num">Clôture</th><th class="num">Variation</th></tr></thead>
+    <tbody>${pts.slice().reverse().map((c, i, arr) => {
+      const prec = arr[i + 1], v = prec ? (num(c.cloture) - num(prec.cloture)) / num(prec.cloture) : null;
+      return `<tr><td>${esc(dateFr(c.date_cours))}</td><td class="num">${argent(c.cloture, dev)}</td>
+        <td class="num ${v === null ? "" : v >= 0 ? "pos" : "neg"}">${v === null ? "—" : (v >= 0 ? "+" : "−") + pct(Math.abs(v))}</td></tr>`;
+    }).join("")}</tbody></table>`;
+}
+
 $("periods").querySelectorAll("button").forEach(b => b.onclick = () => {
   $("periods").querySelectorAll("button").forEach(x => x.classList.remove("active"));
-  b.classList.add("active"); etat.jours = Number(b.dataset.days); chargerCours();
+  b.classList.add("active"); etat.jours = Number(b.dataset.days);
+  etat.debut = etat.fin = null; $("dDebut").value = $("dFin").value = "";
+  chargerCours();
 });
+$("btnDates").onclick = () => {
+  etat.debut = $("dDebut").value || null; etat.fin = $("dFin").value || null;
+  $("periods").querySelectorAll("button").forEach(x => x.classList.remove("active"));
+  chargerCours();
+};
 window.addEventListener("resize", () => { if (etat.courante) chargerCours(); });
 
 /* ==========================================================
