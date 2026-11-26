@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/societes/1"
+method: DELETE
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Code 409", function () {
+          pm.response.to.have.status(409);
+      });
+      pm.test("Aucun détail technique dans la réponse", function () {
+          const texte = pm.response.text().toLowerCase();
+          pm.expect(texte).to.not.include("traceback");
+          pm.expect(texte).to.not.include("pymysql");
+          pm.expect(texte).to.not.include("app_finance");
+      });
+    language: text/javascript
+order: 4000

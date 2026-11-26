@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance — Espace client</title>
+<style>
+  :root {
+    --side: #0f172a; --side-2: #1e293b; --side-text: #cbd5e1; --side-muted: #64748b;
+    --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --muted: #64748b; --line: #e2e8f0;
+    --accent: #4f46e5; --accent-2: #6366f1; --accent-soft: #eef2ff;
+    --up: #059669; --up-soft: #d1fae5; --down: #dc2626; --down-soft: #fee2e2;
+    --warn: #d97706; --warn-soft: #fef3c7;
+    --radius: 12px; --shadow: 0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.05);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
+  .app { display: grid; grid-template-columns: 280px 1fr; height: 100vh; }
+
+  /* ---------- Barre latérale ---------- */
+  aside { background: var(--side); color: var(--side-text); display: flex; flex-direction: column; min-height: 0; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 22px 20px 18px; }
+  .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--accent-2), #22d3ee); display: grid; place-items: center; }
+  .brand b { color: #fff; font-size: 16px; letter-spacing: .2px; }
+  .brand small { display: block; color: var(--side-muted); font-size: 12px; }
+  .nav { padding: 0 12px; }
+  .nav button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 0; background: none; border-radius: 8px; color: var(--side-text); cursor: pointer; text-align: left; }
+  .nav button:hover { background: var(--side-2); }
+  .nav button.active { background: var(--side-2); color: #fff; }
+  .side-title { padding: 18px 24px 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--side-muted); display: flex; justify-content: space-between; }
+  .search { margin: 0 16px 8px; position: relative; }
+  .search input { width: 100%; background: var(--side-2); border: 1px solid #334155; border-radius: 8px; padding: 8px 10px 8px 32px; color: #fff; }
+  .search input::placeholder { color: var(--side-muted); }
+  .search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); }
+  .companies { list-style: none; margin: 0; padding: 0 12px 16px; overflow: auto; flex: 1; min-height: 0; }
+  .companies li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+  .companies li:hover { background: var(--side-2); }
+  .companies li.active { background: rgba(99,102,241,.18); color: #fff; }
+  .avatar { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; font-weight: 700; font-size: 12px; color: #fff; flex: none; }
+  .companies .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .companies .sect { font-size: 12px; color: var(--side-muted); }
+  .side-foot { border-top: 1px solid var(--side-2); padding: 14px 20px; font-size: 12px; color: var(--side-muted); display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--side-muted); flex: none; }
+  .dot.ok { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.2); }
+  .dot.ko { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.2); }
+  .dot.demo { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.2); }
+
+  /* ---------- Zone principale ---------- */
+  .main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .topbar { background: var(--card); border-bottom: 1px solid var(--line); padding: 14px 28px; display: flex; align-items: center; gap: 16px; }
+  .crumbs { flex: 1; color: var(--muted); }
+  .crumbs b { color: var(--text); }
+  .content { padding: 28px; overflow: auto; flex: 1; }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-weight: 500; transition: background .15s, border-color .15s; }
+  .btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: #4338ca; }
+  .btn.danger { color: var(--down); }
+  .btn.danger:hover { background: var(--down-soft); border-color: #fecaca; }
+  .btn.danger-full { background: var(--down); border-color: var(--down); color: #fff; }
+  .btn:disabled { opacity: .6; cursor: default; }
+  .icon-btn { border: 0; background: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--muted); }
+  .icon-btn:hover { background: var(--bg); color: var(--text); }
+
+  .switch { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; cursor: pointer; user-select: none; }
+  .switch input { display: none; }
+  .switch .track { width: 34px; height: 20px; border-radius: 20px; background: #cbd5e1; position: relative; transition: background .2s; }
+  .switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .switch input:checked + .track { background: var(--warn); }
+  .switch input:checked + .track::after { transform: translateX(14px); }
+
+  h1 { font-size: 24px; margin: 0; letter-spacing: -.3px; }
+  .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .page-head p { margin: 6px 0 0; color: var(--muted); }
+  .title-row { display: flex; align-items: center; gap: 14px; }
+  .title-row .avatar { width: 48px; height: 48px; border-radius: 12px; font-size: 18px; }
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--accent-soft); color: var(--accent); }
+  .badge.grey { background: var(--bg); color: var(--muted); }
+  .actions { display: flex; gap: 8px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+  .kpi .lbl { color: var(--muted); font-size: 13px; display: flex; justify-content: space-between; }
+  .kpi .val { font-size: 24px; font-weight: 700; margin-top: 8px; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
+  .kpi .sub { margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .delta { font-weight: 600; font-size: 12px; padding: 2px 6px; border-radius: 6px; }
+  .delta.up { color: var(--up); background: var(--up-soft); }
+  .delta.down { color: var(--down); background: var(--down-soft); }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 24px; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line); gap: 12px; flex-wrap: wrap; }
+  .card-head h2 { font-size: 15px; margin: 0; }
+  .card-head small { color: var(--muted); }
+  .card-body { padding: 20px; }
+  .seg { display: inline-flex; background: var(--bg); border-radius: 8px; padding: 3px; }
+  .seg button { border: 0; background: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; color: var(--muted); font-weight: 500; font-size: 13px; }
+  .seg button.active { background: var(--card); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 20px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; background: #f8fafc; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr.click { cursor: pointer; }
+  tbody tr.click:hover { background: #f8fafc; }
+  .table-scroll { overflow-x: auto; }
+  .pos { color: var(--up); } .neg { color: var(--down); }
+
+  .chart { position: relative; height: 280px; }
+  .chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .tip { position: absolute; pointer-events: none; background: var(--side); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 12px; white-space: nowrap; transform: translate(-50%, -120%); display: none; }
+
+  .empty { text-align: center; color: var(--muted); padding: 40px 20px; }
+  .empty svg { margin-bottom: 10px; opacity: .5; }
+  .skeleton { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: sk 1.2s infinite; border-radius: 6px; height: 14px; }
+  @keyframes sk { to { background-position: -200% 0; } }
+
+  /* ---------- Modale ---------- */
+  .overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: none; align-items: center; justify-content: center; z-index: 20; padding: 20px; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--card); border-radius: 14px; width: 100%; max-width: 440px; box-shadow: 0 20px 50px rgba(0,0,0,.25); animation: pop .15s ease-out; }
+  @keyframes pop { from { transform: scale(.97); opacity: 0; } }
+  .modal-head { padding: 20px 24px 0; }
+  .modal-head h3 { margin: 0; font-size: 18px; }
+  .modal-head p { margin: 6px 0 0; color: var(--muted); }
+  .modal-body { padding: 20px 24px; }
+  .modal-foot { padding: 16px 24px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; background: #f8fafc; border-radius: 0 0 14px 14px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+  .field input { width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; }
+  .field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .field.error input { border-color: var(--down); }
+  .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; justify-content: space-between; }
+  .field.error .hint { color: var(--down); }
+
+  /* ---------- Notifications ---------- */
+  #toasts { position: fixed; right: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 10px; z-index: 30; }
+  .toast { display: flex; align-items: flex-start; gap: 10px; background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--up); border-radius: 10px; padding: 12px 14px; min-width: 300px; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,.12); animation: slide .2s ease-out; }
+  .toast.err { border-left-color: var(--down); }
+  @keyframes slide { from { transform: translateX(20px); opacity: 0; } }
+  .toast .code { font-family: ui-monospace, Consolas, monospace; font-weight: 700; font-size: 12px; padding: 2px 6px; border-radius: 4px; background: var(--up-soft); color: var(--up); }
+  .toast.err .code { background: var(--down-soft); color: var(--down); }
+
+  .hidden { display: none !important; }
+  @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 760px) { .app { grid-template-columns: 1fr; } aside { display: none; } .content { padding: 16px; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ======== Barre latérale ======== -->
+  <aside>
+    <div class="brand">
+      <div class="logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>
+      </div>
+      <div><b>Finance</b><small>Espace client</small></div>
+    </div>
+
+    <nav class="nav">
+      <button id="navOverview" class="active">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Vue d'ensemble
+      </button>
+    </nav>
+
+    <div class="side-title"><span>Sociétés</span><span id="countSide">0</span></div>
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+      <input id="search" placeholder="Rechercher…" autocomplete="off">
+    </div>
+    <ul class="companies" id="listSide"></ul>
+
+    <div class="side-foot"><span class="dot" id="apiDot"></span><span id="apiStatus">Connexion…</span></div>
+  </aside>
+
+  <!-- ======== Zone principale ======== -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumbs" id="crumbs"><b>Vue d'ensemble</b></div>
+      <label class="switch" title="Utiliser des données fictives sans API">
+        <input type="checkbox" id="demo"><span class="track"></span> Mode démo
+      </label>
+      <button class="icon-btn" id="btnSettings" title="Adresse de l'API">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+      <button class="btn primary" id="btnNew">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouvelle société
+      </button>
+    </div>
+
+    <div class="content"><div class="wrap">
+
+      <!-- ----- Vue d'ensemble ----- -->
+      <section id="viewOverview">
+        <div class="page-head">
+          <div><h1>Vue d'ensemble</h1><p>Toutes les sociétés suivies et leurs secteurs.</p></div>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="lbl">Sociétés suivies</div><div class="val" id="kSoc">—</div></div>
+          <div class="kpi"><div class="lbl">Secteurs</div><div class="val" id="kSect">—</div></div>
+          <div class="kpi"><div class="lbl">Secteur principal</div><div class="val" id="kTop" style="font-size:18px">—</div></div>
+          <div class="kpi"><div class="lbl">Devises</div><div class="val" id="kDev">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Sociétés</h2><small id="tableCount"></small></div>
+          <div class="table-scroll" id="tableSocietes"></div>
+        </div>
+      </section>
+
+      <!-- ----- Détail société ----- -->
+      <section id="viewDetail" class="hidden">
+        <div class="page-head">
+          <div class="title-row">
+            <div class="avatar" id="dAvatar"></div>
+            <div>
+              <h1 id="dNom"></h1>
+              <div style="margin-top:6px;display:flex;gap:6px">
+                <span class="badge" id="dSecteur"></span>
+                <span class="badge grey" id="dDevise"></span>
+                <span class="badge grey" id="dId"></span>
+              </div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn" id="btnEdit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Modifier
+            </button>
+            <button class="btn danger" id="btnDelete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Supprimer
+            </button>
+          </div>
+        </div>
+
+        <div class="kpis" id="dKpis"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><h2>Cours de clôture</h2><small id="coursInfo"></small></div>
+            <div class="seg" id="periods">
+              <button data-days="30">1M</button>
+              <button data-days="180">6M</button>
+              <button data-days="365">1A</button>
+              <button data-days="0" class="active">Tout</button>
+            </div>
+          </div>
+          <div class="card-body"><div class="chart" id="chart"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>Bilans annuels</h2><small id="bilansCount"></small></div>
+          <div class="table-scroll" id="tableBilans"></div>
+        </div>
+      </section>
+
+    </div></div>
+  </div>
+</div>
+
+<!-- ======== Modale : créer / modifier ======== -->
+<div class="overlay" id="mForm">
+  <form class="modal" id="formSociete" novalidate>
+    <div class="modal-head"><h3 id="fTitle">Nouvelle société</h3><p id="fSub">Renseigne les informations de la société.</p></div>
+    <div class="modal-body" id="fFields"></div>
+    <div class="modal-foot">
+      <button type="button" class="btn" data-close>Annuler</button>
+      <button type="submit" class="btn primary" id="fSubmit">Créer</button>
+    </div>
+  </form>
+</div>
+
+<!-- ======== Modale : suppression ======== -->
+<div class="overlay" id="mDelete">
+  <div class="modal">
+    <div class="modal-head"><h3>Supprimer la société ?</h3><p id="delText"></p></div>
+    <div class="modal-foot" style="border-top:0;margin-top:16px">
+      <button class="btn" data-close>Annuler</button>
+      <button class="btn danger-full" id="delConfirm">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== Modale : adresse de l'API ======== -->
+<div class="overlay" id="mSettings">
+  <form class="modal" id="formSettings">
+    <div class="modal-head"><h3>Adresse de l'API</h3><p>L'adresse où tourne ton FastAPI.</p></div>
+    <div class="modal-body"><div class="field" style="margin:0"><label for="apiUrl">URL</label><input id="apiUrl"></div></div>
+    <div class="modal-foot">
+      <button type="button" class="btn" data-close>Annuler</button>
+      <button type="submit" class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* ==========================================================
+   CONFIGURATION — adaptée à ta table « societe »
+   (mêmes règles que dans ton schemas.py)
+   ========================================================== */
+const CHAMPS_SOCIETE = [
+  { name: "nom",     label: "Nom de la société", required: true, max: 100, placeholder: "Ex. Aurora Tech" },
+  { name: "secteur", label: "Secteur d'activité", required: true, max: 50,  placeholder: "Ex. Technologie" },
+];
+// Servi par FastAPI (http://127.0.0.1:8000/app) → même adresse que l'API.
+// Ouvert en double-cliquant sur le fichier → adresse locale par défaut.
+const API_PAR_DEFAUT = location.protocol.startsWith("http") ? location.origin : "http://127.0.0.1:8000";
+
+/* ========================================================== */
+const $ = (id) => document.getElementById(id);
+const etat = { societes: [], courante: null, edition: false, jours: 0 };
+
+/* Mémorise l'adresse de l'API et le mode démo dans le navigateur */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+let apiUrl = location.protocol.startsWith("http") ? API_PAR_DEFAUT : store.get("apiUrl", API_PAR_DEFAUT);
+$("demo").checked = store.get("demo", "0") === "1";
+
+/* ---------- Outils ---------- */
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+const COULEURS = ["#4f46e5","#0891b2","#059669","#d97706","#db2777","#7c3aed","#2563eb","#dc2626"];
+function couleur(txt) { let h = 0; for (const c of String(txt)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return COULEURS[h % COULEURS.length]; }
+function initiales(nom) { return String(nom || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(m => m[0].toUpperCase()).join(""); }
+function num(v) { const n = Number(v); return Number.isFinite(n) ? n : null; }
+function argent(v, devise = "EUR", compact = false) {
+  const n = num(v); if (n === null) return "—";
+  try {
+    return new Intl.NumberFormat("fr-FR", { style: "currency", currency: devise || "EUR",
+      notation: compact ? "compact" : "standard", maximumFractionDigits: compact ? 1 : 2 }).format(n);
+  } catch { return n.toLocaleString("fr-FR") + " " + esc(devise); }
+}
+function pct(v) { return v === null || !Number.isFinite(v) ? "—" : (v * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " %"; }
+function ratio(v) { return v === null || !Number.isFinite(v) ? "—" : v.toLocaleString("fr-FR", { maximumFractionDigits: 2 }); }
+function dateFr(d) { return new Date(d + "T00:00:00").toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }); }
+function isoJour(d) { return d.toISOString().slice(0, 10); }
+
+/* ---------- Notifications (avec le code HTTP) ---------- */
+function toast(code, texte, ok = true) {
+  const t = document.createElement("div");
+  t.className = "toast" + (ok ? "" : " err");
+  t.innerHTML = (code ? `<span class="code">${esc(code)}</span>` : "") + `<span>${esc(texte)}</span>`;
+  $("toasts").appendChild(t);
+  setTimeout(() => t.remove(), 5000);
+}
+function texteErreur(data) {
+  if (data && typeof data.detail === "string") return data.detail;
+  if (data && Array.isArray(data.detail)) {
+    return data.detail.map(e => `${(e.loc || []).slice(1).join(".") || "donnée"} : ${e.msg}`).join(" · ");
+  }
+  return "Une erreur est survenue";
+}
+
+/* ---------- Statut de connexion ---------- */
+function statut(type, texte) { $("apiDot").className = "dot " + type; $("apiStatus").textContent = texte; }
+
+/* ==========================================================
+   MODE DÉMO — fausse API en mémoire, mêmes règles que la vraie
+   ========================================================== */
+const demo = (() => {
+  const societes = [
+    { id: 1, nom: "Aurora Tech", secteur: "Technologie", devise: "EUR" },
+    { id: 2, nom: "Boreal Energie", secteur: "Energie", devise: "EUR" },
+    { id: 3, nom: "Cobalt Sante", secteur: "Sante", devise: "EUR" },
+    { id: 4, nom: "Delta Distribution", secteur: "Distribution", devise: "EUR" },
+  ];
+  const bilans = {}, cours = {};
+  let idB = 1, idC = 1;
+  societes.forEach((s, i) => {
+    bilans[s.id] = [2022, 2023, 2024].map((a, k) => {
+      const ca = 800 + i * 400 + k * 120;
+      return { id: idB++, societe_id: s.id, annee: a, chiffre_affaires: ca * 1e6, resultat_net: ca * (0.06 + 0.02 * k - 0.03 * (i % 2)) * 1e6,
+        actifs_courants: ca * 0.5e6, passifs_courants: ca * (0.35 + 0.05 * i) * 1e6, dettes_totales: ca * (0.6 + 0.2 * i) * 1e6, capitaux_propres: ca * 0.9e6 };
+    });
+    let p = 40 + i * 25; cours[s.id] = [];
+    const fin = new Date();
+    for (let j = 400; j >= 0; j--) {
+      const d = new Date(fin); d.setDate(d.getDate() - j);
+      if (d.getDay() === 0 || d.getDay() === 6) continue;
+      p = Math.max(5, p * (1 + Math.sin(j / 23 + i) * 0.004 + (Math.sin(j * 7.3 + i * 3) * 0.012)));
+      cours[s.id].push({ id: idC++, societe_id: s.id, date_cours: isoJour(d), cloture: Math.round(p * 100) / 100 });
+    }
+  });
+  return { societes, bilans, cours, prochainId: 5 };
+})();
+
+function appelDemo(methode, chemin, corps) {
+  const rep = (status, data) => ({ ok: status < 400, status, data });
+  const url = new URL(chemin, "http://demo");
+  const m = url.pathname.match(/^\/societes(?:\/([^/]+))?(?:\/(bilans|cours))?$/);
+  if (!m) return rep(404, { detail: "Route introuvable" });
+  if (m[1] !== undefined && !/^\d+$/.test(m[1])) return rep(422, { detail: [{ loc: ["path", "id_societe"], msg: "doit être un entier" }] });
+  const id = m[1] ? Number(m[1]) : null, sous = m[2];
+  const idx = demo.societes.findIndex(s => s.id === id);
+
+  const valider = (c) => {
+    const err = [];
+    for (const ch of CHAMPS_SOCIETE) {
+      const v = typeof c?.[ch.name] === "string" ? c[ch.name].trim() : c?.[ch.name];
+      if (v === undefined || v === null) err.push({ loc: ["body", ch.name], msg: "Field required" });
+      else if (String(v).length < 1) err.push({ loc: ["body", ch.name], msg: "String should have at least 1 character" });
+      else if (String(v).length > ch.max) err.push({ loc: ["body", ch.name], msg: `String should have at most ${ch.max} characters` });
+    }
+    return err.length ? { detail: err } : null;
+  };
+
+  if (id === null && methode === "GET") return rep(200, demo.societes);
+  if (id === null && methode === "POST") {
+    const e = valider(corps); if (e) return rep(422, e);
+    const s = { id: demo.prochainId++, nom: corps.nom.trim(), secteur: corps.secteur.trim(), devise: "EUR" };
+    demo.societes.push(s); demo.bilans[s.id] = []; demo.cours[s.id] = [];
+    return rep(201, s);
+  }
+  if (idx === -1) return rep(404, { detail: "Société introuvable" });
+  if (sous === "bilans") return rep(200, demo.bilans[id] || []);
+  if (sous === "cours") {
+    const deb = url.searchParams.get("date_debut") || "1900-01-01", fin = url.searchParams.get("date_fin") || "2100-12-31";
+    return rep(200, (demo.cours[id] || []).filter(c => c.date_cours >= deb && c.date_cours <= fin));
+  }
+  if (methode === "GET") return rep(200, demo.societes[idx]);
+  if (methode === "PUT") {
+    const e = valider(corps); if (e) return rep(422, e);
+    Object.assign(demo.societes[idx], { nom: corps.nom.trim(), secteur: corps.secteur.trim() });
+    return rep(200, demo.societes[idx]);
+  }
+  if (methode === "DELETE") {
+    if ((demo.bilans[id] || []).length) return rep(409, { detail: "Suppression impossible : la société a encore des bilans" });
+    demo.societes.splice(idx, 1); return rep(204, null);
+  }
+  return rep(405, { detail: "Méthode non autorisée" });
+}
+
+/* ==========================================================
+   APPEL À L'API
+   ========================================================== */
+async function appel(methode, chemin, corps, silencieux = false) {
+  let rep;
+  if ($("demo").checked) {
+    await new Promise(r => setTimeout(r, 150));
+    rep = appelDemo(methode, chemin, corps);
+  } else {
+    const opt = { method: methode, headers: { Accept: "application/json" } };
+    if (corps !== undefined) { opt.headers["Content-Type"] = "application/json"; opt.body = JSON.stringify(corps); }
+    try {
+      const r = await fetch(apiUrl.replace(/\/+$/, "") + chemin, opt);
+      const data = r.status === 204 ? null : await r.json().catch(() => null);
+      rep = { ok: r.ok, status: r.status, data };
+      statut("ok", "API connectée");
+    } catch {
+      statut("ko", "API injoignable");
+      if (!silencieux) toast("", "Impossible de joindre l'API. Vérifie qu'elle est lancée (uvicorn) ou active le mode démo.", false);
+      const e = new Error("reseau"); e.status = 0; throw e;
+    }
+  }
+  if (!rep.ok) {
+    if (!silencieux) toast(rep.status, texteErreur(rep.data), false);
+    const e = new Error("HTTP " + rep.status); e.status = rep.status; e.data = rep.data; throw e;
+  }
+  return rep;
+}
+
+/* ==========================================================
+   VUE D'ENSEMBLE
+   ========================================================== */
+async function chargerSocietes() {
+  $("tableSocietes").innerHTML = `<div class="card-body">${'<div class="skeleton" style="margin:10px 0"></div>'.repeat(4)}</div>`;
+  try {
+    const { data } = await appel("GET", "/societes");
+    etat.societes = Array.isArray(data) ? data : [];
+    if ($("demo").checked) statut("demo", "Mode démo");
+  } catch { etat.societes = []; }
+  afficherSide();
+  afficherOverview();
+}
+
+function afficherSide() {
+  const q = $("search").value.trim().toLowerCase();
+  const liste = etat.societes.filter(s => !q || `${s.nom} ${s.secteur}`.toLowerCase().includes(q));
+  $("countSide").textContent = etat.societes.length;
+  $("listSide").innerHTML = liste.length ? liste.map(s => `
+    <li data-id="${esc(s.id)}" class="${etat.courante && etat.courante.id == s.id ? "active" : ""}">
+      <span class="avatar" style="background:${couleur(s.nom)}">${esc(initiales(s.nom))}</span>
+      <span style="min-width:0"><div class="name">${esc(s.nom)}</div><div class="sect">${esc(s.secteur)}</div></span>
+    </li>`).join("") : `<li style="cursor:default;color:var(--side-muted)">Aucun résultat</li>`;
+  $("listSide").querySelectorAll("li[data-id]").forEach(li => li.onclick = () => ouvrirSociete(li.dataset.id));
+}
+
+function afficherOverview() {
+  const s = etat.societes;
+  const secteurs = {};
+  s.forEach(x => secteurs[x.secteur] = (secteurs[x.secteur] || 0) + 1);
+  const top = Object.entries(secteurs).sort((a, b) => b[1] - a[1])[0];
+  $("kSoc").textContent = s.length;
+  $("kSect").textContent = Object.keys(secteurs).length;
+  $("kTop").textContent = top ? `${top[0]} (${top[1]})` : "—";
+  $("kDev").textContent = [...new Set(s.map(x => x.devise).filter(Boolean))].join(", ") || "—";
+  $("tableCount").textContent = `${s.length} société${s.length > 1 ? "s" : ""}`;
+
+  if (!s.length) {
+    $("tableSocietes").innerHTML = `<div class="empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      <div>Aucune société à afficher.</div></div>`;
+    return;
+  }
+  $("tableSocietes").innerHTML = `<table>
+    <thead><tr><th>Société</th><th>Secteur</th><th>Devise</th><th class="num">ID</th></tr></thead>
+    <tbody>${s.map(x => `<tr class="click" data-id="${esc(x.id)}">
+      <td><div style="display:flex;align-items:center;gap:10px">
+        <span class="avatar" style="background:${couleur(x.nom)}">${esc(initiales(x.nom))}</span><b>${esc(x.nom)}</b></div></td>
+      <td><span class="badge">${esc(x.secteur)}</span></td>
+      <td>${esc(x.devise ?? "—")}</td>
+      <td class="num" style="color:var(--muted)">#${esc(x.id)}</td></tr>`).join("")}
+    </tbody></table>`;
+  $("tableSocietes").querySelectorAll("tr[data-id]").forEach(tr => tr.onclick = () => ouvrirSociete(tr.dataset.id));
+}
+
+function montrerOverview() {
+  etat.courante = null;
+  $("viewDetail").classList.add("hidden");
+  $("viewOverview").classList.remove("hidden");
+  $("navOverview").classList.add("active");
+  $("crumbs").innerHTML = "<b>Vue d'ensemble</b>";
+  afficherSide();
+}
+
+/* ==========================================================
+   DÉTAIL D'UNE SOCIÉTÉ
+   ========================================================== */
+async function ouvrirSociete(id) {
+  let data;
+  try { ({ data } = await appel("GET", `/societes/${encodeURIComponent(id)}`)); }
+  catch (e) { if (e.status === 404) { await chargerSocietes(); montrerOverview(); } return; }
+  etat.courante = data;
+  $("viewOverview").classList.add("hidden");
+  $("viewDetail").classList.remove("hidden");
+  $("navOverview").classList.remove("active");
+  $("crumbs").innerHTML = `Sociétés <span style="margin:0 6px">/</span> <b>${esc(data.nom)}</b>`;
+  $("dAvatar").textContent = initiales(data.nom);
+  $("dAvatar").style.background = couleur(data.nom);
+  $("dNom").textContent = data.nom;
+  $("dSecteur").textContent = data.secteur;
+  $("dDevise").textContent = data.devise ?? "EUR";
+  $("dId").textContent = "ID #" + data.id;
+  afficherSide();
+  chargerBilans();
+  chargerCours();
+}
+
+/* ---------- Bilans + indicateurs ---------- */
+async function chargerBilans() {
+  const s = etat.courante, dev = s.devise || "EUR";
+  $("tableBilans").innerHTML = `<div class="card-body"><div class="skeleton"></div></div>`;
+  $("dKpis").innerHTML = "";
+  let bilans = [];
+  try { ({ data: bilans } = await appel("GET", `/societes/${s.id}/bilans`)); } catch {}
+  bilans = (bilans || []).slice().sort((a, b) => a.annee - b.annee);
+  $("bilansCount").textContent = bilans.length ? `${bilans.length} exercice${bilans.length > 1 ? "s" : ""}` : "";
+
+  const der = bilans[bilans.length - 1], prec = bilans[bilans.length - 2];
+  const ca = der ? num(der.chiffre_affaires) : null, rn = der ? num(der.resultat_net) : null;
+  const marge = ca ? rn / ca : null;
+  const liquid = der && num(der.passifs_courants) ? num(der.actifs_courants) / num(der.passifs_courants) : null;
+  const endet = der && num(der.capitaux_propres) ? num(der.dettes_totales) / num(der.capitaux_propres) : null;
+  const evo = (a, b) => (a !== null && b) ? (a - b) / Math.abs(b) : null;
+  const deltaHtml = (v) => v === null ? "" : `<span class="delta ${v >= 0 ? "up" : "down"}">${v >= 0 ? "▲" : "▼"} ${pct(Math.abs(v))}</span>`;
+  const sub = der ? `Exercice ${der.annee}` : "Aucun bilan";
+
+  $("dKpis").innerHTML = `
+    <div class="kpi"><div class="lbl">Chiffre d'affaires ${deltaHtml(prec ? evo(ca, num(prec.chiffre_affaires)) : null)}</div>
+      <div class="val">${argent(ca, dev, true)}</div><div class="sub">${sub}</div></div>
+    <div class="kpi"><div class="lbl">Résultat net ${deltaHtml(prec ? evo(rn, num(prec.resultat_net)) : null)}</div>
+      <div class="val ${rn !== null && rn < 0 ? "neg" : ""}">${argent(rn, dev, true)}</div><div class="sub">Marge nette : ${pct(marge)}</div></div>
+    <div class="kpi"><div class="lbl">Liquidité générale</div>
+      <div class="val">${ratio(liquid)}</div><div class="sub">Actifs / passifs courants</div></div>
+    <div class="kpi"><div class="lbl">Endettement</div>
+      <div class="val">${ratio(endet)}</div><div class="sub">Dettes / capitaux propres</div></div>`;
+
+  if (!bilans.length) {
+    $("tableBilans").innerHTML = `<div class="empty">Aucun bilan enregistré pour cette société.</div>`;
+    return;
+  }
+  const cols = [["chiffre_affaires","Chiffre d'affaires"],["resultat_net","Résultat net"],["actifs_courants","Actifs courants"],
+                ["passifs_courants","Passifs courants"],["dettes_totales","Dettes totales"],["capitaux_propres","Capitaux propres"]];
+  $("tableBilans").innerHTML = `<table>
+    <thead><tr><th>Année</th>${cols.map(c => `<th class="num">${c[1]}</th>`).join("")}<th class="num">Marge</th></tr></thead>
+    <tbody>${bilans.slice().reverse().map(b => {
+      const m = num(b.chiffre_affaires) ? num(b.resultat_net) / num(b.chiffre_affaires) : null;
+      return `<tr><td><b>${esc(b.annee)}</b></td>${cols.map(c =>
+        `<td class="num ${c[0] === "resultat_net" && num(b[c[0]]) < 0 ? "neg" : ""}">${argent(b[c[0]], dev)}</td>`).join("")}
+        <td class="num ${m !== null && m < 0 ? "neg" : "pos"}">${pct(m)}</td></tr>`;
+    }).join("")}</tbody></table>`;
+}
+
+/* ---------- Cours + graphique ---------- */
+async function chargerCours() {
+  const s = etat.courante;
+  let chemin = `/societes/${s.id}/cours`;
+  if (etat.jours > 0) {
+    const d = new Date(); d.setDate(d.getDate() - etat.jours);
+    chemin += `?date_debut=${isoJour(d)}&date_fin=${isoJour(new Date())}`;
+  }
+  $("chart").innerHTML = `<div class="skeleton" style="height:100%"></div>`;
+  let cours = [];
+  try { ({ data: cours } = await appel("GET", chemin)); } catch {}
+  dessiner((cours || []).slice().sort((a, b) => a.date_cours.localeCompare(b.date_cours)), s.devise || "EUR");
+}
+
+function dessiner(pts, dev) {
+  const box = $("chart");
+  if (pts.length < 2) {
+    $("coursInfo").textContent = "";
+    box.innerHTML = `<div class="empty" style="padding-top:100px">${pts.length ? "Pas assez de points pour tracer une courbe." : "Aucun cours sur cette période."}</div>`;
+    return;
+  }
+  const vals = pts.map(p => num(p.cloture));
+  const first = vals[0], last = vals[vals.length - 1], var_ = (last - first) / first;
+  $("coursInfo").innerHTML = `Dernier : <b style="color:var(--text)">${argent(last, dev)}</b> &nbsp;
+    <span class="delta ${var_ >= 0 ? "up" : "down"}">${var_ >= 0 ? "▲" : "▼"} ${pct(Math.abs(var_))}</span> sur la période`;
+
+  const W = box.clientWidth || 800, H = 280, pl = 56, pr = 12, pt = 10, pb = 28;
+  let min = Math.min(...vals), max = Math.max(...vals);
+  const pad = (max - min) * 0.1 || 1; min -= pad; max += pad;
+  const x = i => pl + (i / (pts.length - 1)) * (W - pl - pr);
+  const y = v => pt + (1 - (v - min) / (max - min)) * (H - pt - pb);
+  const line = vals.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const area = `${line}L${x(vals.length - 1)},${H - pb}L${x(0)},${H - pb}Z`;
+  const col = var_ >= 0 ? "#059669" : "#dc2626";
+  const ticks = Array.from({ length: 5 }, (_, k) => min + (k / 4) * (max - min));
+  const xt = [0, Math.floor(pts.length / 2), pts.length - 1];
+
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${col}" stop-opacity=".18"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+    ${ticks.map(t => `<line x1="${pl}" x2="${W - pr}" y1="${y(t)}" y2="${y(t)}" stroke="#e2e8f0"/>
+      <text x="${pl - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="#94a3b8">${t.toLocaleString("fr-FR", { maximumFractionDigits: 0 })}</text>`).join("")}
+    ${xt.map(i => `<text x="${x(i)}" y="${H - 8}" text-anchor="${i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle"}" font-size="11" fill="#94a3b8">${dateFr(pts[i].date_cours)}</text>`).join("")}
+    <path d="${area}" fill="url(#g)"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>
+    <line id="hx" y1="${pt}" y2="${H - pb}" stroke="#94a3b8" stroke-dasharray="3 3" visibility="hidden"/>
+    <circle id="hc" r="4" fill="#fff" stroke="${col}" stroke-width="2" visibility="hidden"/>
+    <rect x="${pl}" y="0" width="${W - pl - pr}" height="${H}" fill="transparent" id="hz"/>
+  </svg><div class="tip" id="tip"></div>`;
+
+  const svg = box.querySelector("svg"), tip = $("tip");
+  $("hz").onmousemove = (ev) => {
+    const r = svg.getBoundingClientRect();
+    const sx = (ev.clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(pts.length - 1, Math.round((sx - pl) / (W - pl - pr) * (pts.length - 1))));
+    const X = x(i), Y = y(vals[i]);
+    ["hx","hc"].forEach(id => svg.getElementById(id).setAttribute("visibility", "visible"));
+    svg.getElementById("hx").setAttribute("x1", X); svg.getElementById("hx").setAttribute("x2", X);
+    svg.getElementById("hc").setAttribute("cx", X); svg.getElementById("hc").setAttribute("cy", Y);
+    tip.style.display = "block";
+    tip.style.left = (X / W * r.width) + "px"; tip.style.top = (Y / H * r.height) + "px";
+    tip.innerHTML = `${esc(dateFr(pts[i].date_cours))} · <b>${esc(argent(vals[i], dev))}</b>`;
+  };
+  $("hz").onmouseleave = () => { tip.style.display = "none"; ["hx","hc"].forEach(id => svg.getElementById(id).setAttribute("visibility", "hidden")); };
+}
+
+$("periods").querySelectorAll("button").forEach(b => b.onclick = () => {
+  $("periods").querySelectorAll("button").forEach(x => x.classList.remove("active"));
+  b.classList.add("active"); etat.jours = Number(b.dataset.days); chargerCours();
+});
+window.addEventListener("resize", () => { if (etat.courante) chargerCours(); });
+
+/* ==========================================================
+   MODALES
+   ========================================================== */
+function ouvrir(id) { $(id).classList.add("open"); }
+function fermer(id) { $(id).classList.remove("open"); }
+document.querySelectorAll(".overlay").forEach(o => {
+  o.addEventListener("mousedown", e => { if (e.target === o) fermer(o.id); });
+  o.querySelectorAll("[data-close]").forEach(b => b.onclick = () => fermer(o.id));
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".overlay.open").forEach(o => fermer(o.id)); });
+
+/* ---------- Créer / modifier ---------- */
+function ouvrirFormulaire(edition) {
+  etat.edition = edition;
+  $("fTitle").textContent = edition ? "Modifier la société" : "Nouvelle société";
+  $("fSub").textContent = edition ? `Mise à jour de « ${etat.courante.nom} ».` : "Renseigne les informations de la société.";
+  $("fSubmit").textContent = edition ? "Enregistrer" : "Créer";
+  $("fFields").innerHTML = CHAMPS_SOCIETE.map(c => `
+    <div class="field" id="w_${c.name}">
+      <label for="f_${c.name}">${esc(c.label)}${c.required ? ' <span style="color:var(--down)">*</span>' : ""}</label>
+      <input id="f_${c.name}" maxlength="${c.max}" placeholder="${esc(c.placeholder || "")}"
+        value="${edition ? esc(etat.courante[c.name]) : ""}" autocomplete="off">
+      <div class="hint"><span class="msg"></span><span class="cnt"></span></div>
+    </div>`).join("");
+  CHAMPS_SOCIETE.forEach(c => {
+    const inp = $("f_" + c.name), cnt = $("w_" + c.name).querySelector(".cnt");
+    const maj = () => { cnt.textContent = `${inp.value.length}/${c.max}`; $("w_" + c.name).classList.remove("error"); $("w_" + c.name).querySelector(".msg").textContent = ""; };
+    inp.oninput = maj; maj();
+  });
+  ouvrir("mForm");
+  setTimeout(() => $("f_" + CHAMPS_SOCIETE[0].name).focus(), 50);
+}
+
+$("formSociete").onsubmit = async (e) => {
+  e.preventDefault();
+  const corps = {};
+  CHAMPS_SOCIETE.forEach(c => corps[c.name] = $("f_" + c.name).value);
+  // Pas de contrôle bloquant ici : c'est l'API qui valide (et renvoie 422)
+  $("fSubmit").disabled = true;
+  try {
+    let r;
+    if (etat.edition) {
+      r = await appel("PUT", `/societes/${etat.courante.id}`, corps);
+      toast(r.status, "Société modifiée");
+    } else {
+      r = await appel("POST", "/societes", corps);
+      toast(r.status, "Société créée");
+    }
+    fermer("mForm");
+    await chargerSocietes();
+    if (r.data && r.data.id !== undefined) ouvrirSociete(r.data.id);
+  } catch (err) {
+    if (err.status === 422 && Array.isArray(err.data?.detail)) {
+      err.data.detail.forEach(d => {
+        const champ = (d.loc || [])[1], w = champ && $("w_" + champ);
+        if (w) { w.classList.add("error"); w.querySelector(".msg").textContent = d.msg; }
+      });
+    }
+  } finally { $("fSubmit").disabled = false; }
+};
+
+/* ---------- Supprimer ---------- */
+$("btnDelete").onclick = () => {
+  $("delText").innerHTML = `La société <b>${esc(etat.courante.nom)}</b> sera définitivement supprimée.`;
+  ouvrir("mDelete");
+};
+$("delConfirm").onclick = async () => {
+  $("delConfirm").disabled = true;
+  try {
+    const r = await appel("DELETE", `/societes/${etat.courante.id}`);
+    toast(r.status, "Société supprimée");
+    fermer("mDelete");
+    await chargerSocietes();
+    montrerOverview();
+  } catch { fermer("mDelete"); }
+  finally { $("delConfirm").disabled = false; }
+};
+
+/* ---------- Paramètres ---------- */
+$("btnSettings").onclick = () => { $("apiUrl").value = apiUrl; ouvrir("mSettings"); };
+$("formSettings").onsubmit = (e) => {
+  e.preventDefault();
+  apiUrl = $("apiUrl").value.trim() || API_PAR_DEFAUT;
+  store.set("apiUrl", apiUrl); fermer("mSettings"); chargerSocietes(); montrerOverview();
+};
+
+/* ---------- Divers ---------- */
+$("btnNew").onclick = () => ouvrirFormulaire(false);
+$("btnEdit").onclick = () => ouvrirFormulaire(true);
+$("navOverview").onclick = montrerOverview;
+$("search").oninput = afficherSide;
+$("demo").onchange = () => { store.set("demo", $("demo").checked ? "1" : "0"); montrerOverview(); chargerSocietes(); };
+
+/* ---------- Démarrage ---------- */
+if ($("demo").checked) statut("demo", "Mode démo");
+chargerSocietes();
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/societes"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nom": "Societe incomplete"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Code 422", function () {
+          pm.response.to.have.status(422);
+      });
+      pm.test("Aucun détail technique dans la réponse", function () {
+          const texte = pm.response.text().toLowerCase();
+          pm.expect(texte).to.not.include("traceback");
+          pm.expect(texte).to.not.include("pymysql");
+          pm.expect(texte).to.not.include("app_finance");
+      });
+    language: text/javascript
+order: 6000

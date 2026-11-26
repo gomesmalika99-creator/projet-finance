@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/societes/9999"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Code 404", function () {
+          pm.response.to.have.status(404);
+      });
+      pm.test("Aucun détail technique dans la réponse", function () {
+          const texte = pm.response.text().toLowerCase();
+          pm.expect(texte).to.not.include("traceback");
+          pm.expect(texte).to.not.include("pymysql");
+          pm.expect(texte).to.not.include("app_finance");
+      });
+    language: text/javascript
+order: 1000

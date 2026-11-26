@@ -5,6 +5,7 @@ import pymysql
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 import depot
 from schemas import SocieteEntree
@@ -24,6 +25,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Le front web est servi à l'adresse http://127.0.0.1:8000/app/
+app.mount("/app", StaticFiles(directory="frontend", html=True), name="front")
 
 # Codes d'erreur affichés dans /docs
 R_404 = {404: {"description": "Société introuvable"}}

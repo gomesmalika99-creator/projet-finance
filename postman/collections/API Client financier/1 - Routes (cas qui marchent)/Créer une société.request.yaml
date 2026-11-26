@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/societes"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nom": "Societe Postman",
+      "secteur": "Test"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Code 201", function () {
+          pm.response.to.have.status(201);
+      });
+      pm.test("L'id de la société créée est enregistré", function () {
+          const id = pm.response.json().id;
+          pm.expect(id).to.be.a("number");
+          pm.collectionVariables.set("idCree", id);
+      });
+    language: text/javascript
+order: 5000

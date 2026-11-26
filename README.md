@@ -31,3 +31,14 @@ uvicorn main:app --reload
 
 - Documentation : http://127.0.0.1:8000/docs
 - Tests : importer `postman/collection.json` dans Postman, puis faire **Run collection**.
+## Front web
+
+Une interface web est servie directement par l'API : http://127.0.0.1:8000/app/
+
+- Liste des sociétés avec recherche, fiche détaillée de chaque société
+- Indicateurs calculés depuis le dernier bilan (chiffre d'affaires, résultat net, marge, liquidité, endettement)
+- Graphique des cours de clôture (1 mois, 6 mois, 1 an ou tout)
+- Création, modification et suppression d'une société, avec affichage du code de réponse de l'API (201, 200, 204, 404, 409, 422)
+- Mode démo (fausses données) pour la tester sans API
+
+Le code est dans `frontend/index.html` (HTML, CSS et JavaScript, sans bibliothèque externe). Il a été réalisé avec l'aide d'une IA (Claude).

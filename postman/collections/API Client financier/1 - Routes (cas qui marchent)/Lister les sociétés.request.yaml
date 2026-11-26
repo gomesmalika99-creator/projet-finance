@@ -1,0 +1,15 @@
+$kind: http-request
+description: Renvoie toutes les sociétés.
+url: "{{baseUrl}}/societes"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Code 200", function () {
+          pm.response.to.have.status(200);
+      });
+      pm.test("La réponse est une liste", function () {
+          pm.expect(pm.response.json()).to.be.an("array");
+      });
+    language: text/javascript
+order: 1000
